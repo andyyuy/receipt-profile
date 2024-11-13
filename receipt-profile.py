@@ -39,7 +39,7 @@ print(response)
 if "Error" not in response:
     generate_profile_data = {
         "model": GENERATE_PROFILE_MODEL,
-        "prompt": f"Using this list of receipt items, can you generate an imagined list of physical characteristics of this customer? State their age-range, sex, style of dress, race, height, body modification (if any), hair style, etc. Keep the list brief and concise. Here is the list of items: {response}",
+        "prompt": f"Using this list of receipt items, can you generate an imagined list of physical characteristics of this customer? State their age-range, sex, style of dress, race, height, body modification (if any), hair style, etc. Keep the list of physical traits brief and concise. Here are the person's purchases: {response}",
         "stream": False,
     }
     response = talk_to_ollama(OLLAMA_API_URL, generate_profile_data)
