@@ -3,7 +3,7 @@ import json
 
 import requests
 
-API_URL = "http://localhost:11434/api/generate"
+OLLAMA_API_URL = "http://localhost:11434/api/generate"
 IMG_TO_TXT_MODEL = "llava"
 GENERATE_PROFILE_MODEL = "llama3-chatqa:8b"
 
@@ -33,14 +33,25 @@ img_to_txt_data = {
     "images": [encoded_string],
 }
 
-response = talk_to_ollama(API_URL, img_to_txt_data)
+response = talk_to_ollama(OLLAMA_API_URL, img_to_txt_data)
 print(response)
 
 if "Error" not in response:
     generate_profile_data = {
         "model": GENERATE_PROFILE_MODEL,
-        "prompt": f"Using this list of receipt items, can you generate an imagined list of physical characteristics of this customer? State their age-range, sex, style of dress, race, height, body modification (if any), hair style, etc. Here is the list of items: {response}",
+        "prompt": f"Using this list of receipt items, can you generate an imagined list of physical characteristics of this customer? State their age-range, sex, style of dress, race, height, body modification (if any), hair style, etc. Keep the list brief and concise. Here is the list of items: {response}",
         "stream": False,
     }
-    response = talk_to_ollama(API_URL, generate_profile_data)
+    response = talk_to_ollama(OLLAMA_API_URL, generate_profile_data)
     print(response)
+
+print("Creating image...")
+if "Error" not in response:
+    payload = {"prompt": response, "steps": 5}
+    response = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=payload)
+    r = response.json()
+    print(r)
+
+    if "images" in r:
+        with open("output.png", "wb") as f:
+            f.write(base64.b64decode(r["images"][0]))
