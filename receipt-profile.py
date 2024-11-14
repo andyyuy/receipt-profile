@@ -5,7 +5,7 @@ import requests
 
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
 IMG_TO_TXT_MODEL = "llava"
-GENERATE_PROFILE_MODEL = "llama3-chatqa:8b"
+GENERATE_PROFILE_MODEL = "qwen2"
 
 with open("aldi-receipt.jpg", "rb") as image_file:
     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -34,24 +34,26 @@ img_to_txt_data = {
 }
 
 response = talk_to_ollama(OLLAMA_API_URL, img_to_txt_data)
-print(response)
+if "Error" in response:
+    print("Unable to generate image description:", response)
+    exit()
 
-if "Error" not in response:
-    generate_profile_data = {
-        "model": GENERATE_PROFILE_MODEL,
-        "prompt": f"Using this list of receipt items, can you generate an imagined list of physical characteristics of this customer? State their age-range, sex, style of dress, race, height, body modification (if any), hair style, etc. Keep the list brief and concise. Here is the list of items: {response}",
-        "stream": False,
-    }
-    response = talk_to_ollama(OLLAMA_API_URL, generate_profile_data)
-    print(response)
+generate_profile_data = {
+    "model": GENERATE_PROFILE_MODEL,
+    "prompt": f"Using this list of receipt items, can you generate an imagined list of physical characteristics of this customer? State their age-range, sex, style of dress, race, height, body modification (if any), hair style, etc. Keep the list brief and concise. Here is the list of items: {response}",
+    "stream": False,
+}
 
-print("Creating image...")
-if "Error" not in response:
-    payload = {"prompt": response, "steps": 5}
-    response = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=payload)
-    r = response.json()
-    print(r)
+response = talk_to_ollama(OLLAMA_API_URL, generate_profile_data)
+if "Error" in response:
+    print("Unable to generate customer description", response)
+    exit()
 
-    if "images" in r:
-        with open("output.png", "wb") as f:
-            f.write(base64.b64decode(r["images"][0]))
+payload = {"prompt": response, "steps": 5}
+response = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=payload)
+r = response.json()
+print(r)
+
+if "images" in r:
+    with open("output.png", "wb") as f:
+        f.write(base64.b64decode(r["images"][0]))
