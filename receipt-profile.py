@@ -4,8 +4,8 @@ import json
 import requests
 
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
-IMG_TO_TXT_MODEL = "llava"
-GENERATE_PROFILE_MODEL = "qwen2"
+IMG_TO_TXT_MODEL = "moondream"
+GENERATE_PROFILE_MODEL = "dolphin-phi"
 
 with open("aldi-receipt.jpg", "rb") as image_file:
     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
