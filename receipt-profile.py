@@ -2,10 +2,16 @@ import base64
 import json
 
 import requests
+import torch
+from diffusers import StableDiffusionPipeline
 
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
 IMG_TO_TXT_MODEL = "moondream"
 GENERATE_PROFILE_MODEL = "dolphin-phi"
+
+model_id = "OFA-Sys/small-stable-diffusion-v0"
+pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+pipe = pipe.to("cuda")
 
 with open("aldi-receipt.jpg", "rb") as image_file:
     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -38,25 +44,30 @@ if "Error" in response:
     print("Unable to generate image description:", response)
     exit()
 
-if "Error" not in response:
-    generate_profile_data = {
-        "model": GENERATE_PROFILE_MODEL,
-        "prompt": f"Using this list of receipt items, can you generate an imagined list of physical characteristics of this customer? State their age-range, sex, style of dress, race, height, body modification (if any), hair style, etc. Keep the list of physical traits brief and concise. Here are the purchases: {response}",
-        "stream": False,
-    }
-    response = talk_to_ollama(OLLAMA_API_URL, generate_profile_data)
-    print(response)
+print("Receipt contents:", response)
+
+generate_profile_data = {
+    "model": GENERATE_PROFILE_MODEL,
+    "prompt": f"Here are the purchases: {response}. The imagined sex, race, height, style of dress, age range of such a person is...",
+    "stream": False,
+}
+response = talk_to_ollama(OLLAMA_API_URL, generate_profile_data)
+print(response)
 
 response = talk_to_ollama(OLLAMA_API_URL, generate_profile_data)
 if "Error" in response:
     print("Unable to generate customer description", response)
     exit()
 
-payload = {"prompt": response, "steps": 5}
-response = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=payload)
-r = response.json()
-print(r)
+# payload = {"prompt": response, "steps": 5}
+# response = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=payload)
+# r = response.json()
+# print(r)
 
-if "images" in r:
-    with open("output.png", "wb") as f:
-        f.write(base64.b64decode(r["images"][0]))
+# if "images" in r:
+#     with open("output.png", "wb") as f:
+#         f.write(base64.b64decode(r["images"][0]))
+
+image = pipe(response + " 4K").images[0]
+
+image.save("output.png")
