@@ -13,7 +13,7 @@ model_id = "OFA-Sys/small-stable-diffusion-v0"
 pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
 pipe = pipe.to("cuda")
 
-with open("aldi-receipt.jpg", "rb") as image_file:
+with open("C:\\Users\\21002809\\OneDrive\\Documents\\GitHub\\receipt-profile\\aldi-receipt.jpg", "rb") as image_file:
     encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
 
 
