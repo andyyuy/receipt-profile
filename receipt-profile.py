@@ -59,15 +59,6 @@ if "Error" in response:
     print("Unable to generate customer description", response)
     exit()
 
-# payload = {"prompt": response, "steps": 5}
-# response = requests.post(url="http://127.0.0.1:7860/sdapi/v1/txt2img", json=payload)
-# r = response.json()
-# print(r)
-
-# if "images" in r:
-#     with open("output.png", "wb") as f:
-#         f.write(base64.b64decode(r["images"][0]))
-
 image = pipe(response + " 4K").images[0]
 
 image.save("output.png")
